@@ -8,6 +8,7 @@
   const $ = (sel) => document.querySelector(sel);
   const state = {
     mode: null,
+    page: null,        // 'contact' = 聯絡我們頁面；null = 依模式顯示
     resources: [],
     list: [],          // 已加入清單的資源 id
     rx: { goal: '', note: '', followup: '' },
@@ -263,11 +264,33 @@
       </li>`).join('');
   }
 
+  // ---------- 聯絡我們 ----------
+  function safeUrl(url) {
+    return /^(https?:|mailto:|tel:)/i.test(url) ? url : '';
+  }
+
+  function renderContact() {
+    const team = CONFIG.team || {};
+    $('#contact-name').textContent = team.name || '（請在 config.js 填入服務隊名稱）';
+    $('#contact-intro').textContent = team.intro || '';
+    $('#contact-note').textContent = team.note || '';
+    const links = (team.links || []).filter((l) => safeUrl(l.url || ''));
+    $('#contact-links').innerHTML = links.length
+      ? links.map((l) => {
+          const external = /^https?:/i.test(l.url) ? ' target="_blank" rel="noopener"' : '';
+          return `<a class="contact-link" href="${esc(l.url)}"${external}>${esc(l.label)}</a>`;
+        }).join('')
+      : '<p class="hint">（請在 config.js 填入 Facebook、Instagram 等連結）</p>';
+  }
+
   // ---------- 畫面切換 ----------
   function render() {
-    $('#view-landing').hidden = !!state.mode;
-    $('#view-patient').hidden = state.mode !== 'patient';
-    $('#view-worker').hidden = state.mode !== 'worker';
+    const page = state.page;
+    $('#view-contact').hidden = page !== 'contact';
+    $('#view-landing').hidden = !!page || !!state.mode;
+    $('#view-patient').hidden = !!page || state.mode !== 'patient';
+    $('#view-worker').hidden = !!page || state.mode !== 'worker';
+    if (page === 'contact') renderContact();
     document.querySelectorAll('.mode-switch button').forEach((b) =>
       b.setAttribute('aria-pressed', b.dataset.mode === state.mode));
     $('#list-toggle').hidden = !state.mode;
@@ -278,7 +301,14 @@
 
   function setMode(mode) {
     state.mode = mode;
+    state.page = null;
     save();
+    render();
+    window.scrollTo(0, 0);
+  }
+
+  function setPage(page) {
+    state.page = page;
     render();
     window.scrollTo(0, 0);
   }
@@ -296,6 +326,7 @@
       const t = e.target.closest('button, a');
       if (!t) return;
       if (t.dataset.mode) setMode(t.dataset.mode);
+      else if (t.dataset.page) setPage(t.dataset.page);
       else if (t.dataset.toggle) toggleItem(t.dataset.toggle);
       else if (t.dataset.cat) {
         const cats = state.patient.cats;
@@ -357,6 +388,8 @@
     // 網址可指定模式，例如 ?mode=worker（方便 link worker 加入書籤）
     const urlMode = new URLSearchParams(location.search).get('mode');
     if (urlMode === 'patient' || urlMode === 'worker') state.mode = urlMode;
+    // ?page=contact 可以直接打開聯絡頁（方便放在 QR Code 或社群貼文）
+    if (new URLSearchParams(location.search).get('page') === 'contact') state.page = 'contact';
     $('#font-toggle').setAttribute('aria-pressed', document.documentElement.classList.contains('large'));
     renderNeedGrid();
     renderWorkerCats();
