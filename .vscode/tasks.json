@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "啟動本機預覽 (http://localhost:8000)",
+      "type": "shell",
+      "command": "python3 -m http.server 8000",
+      "isBackground": true,
+      "problemMatcher": [],
+      "group": { "kind": "build", "isDefault": true }
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>社會處方資源站</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-row">
+      <a href="#" class="brand" id="home-link">社會處方資源站</a>
+      <nav class="header-actions">
+        <div class="mode-switch" role="group" aria-label="切換使用模式">
+          <button type="button" data-mode="patient">我是民眾</button>
+          <button type="button" data-mode="worker">我是 Link Worker</button>
+        </div>
+        <button type="button" id="font-toggle" class="ghost" aria-pressed="false">放大字體</button>
+        <button type="button" id="list-toggle" class="primary">
+          <span id="list-title-short">清單</span> (<span id="list-count">0</span>)
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <aside class="crisis-bar" role="note">
+    <div class="wrap">
+      需要立即協助嗎？
+      <a href="tel:1925">安心專線 1925</a>
+      <a href="tel:1995">生命線 1995</a>
+      <a href="tel:1980">張老師 1980</a>
+      緊急危險請撥 <a href="tel:119">119</a> / <a href="tel:110">110</a>
+    </div>
+  </aside>
+
+  <main class="wrap">
+    <p id="load-status" class="status" hidden></p>
+
+    <!-- 首頁：選擇身分 -->
+    <section id="view-landing" class="view">
+      <h1>找到適合你的社區資源</h1>
+      <p class="lead">健康不只靠藥物。認識朋友、動一動、學點新東西、有人可以聊聊，都能讓生活更好。</p>
+      <div class="landing-choices">
+        <button type="button" class="choice" data-mode="patient">
+          <strong>我是民眾 / 家屬</strong>
+          <span>回答一個簡單問題，找到附近可以參加的活動和服務</span>
+        </button>
+        <button type="button" class="choice" data-mode="worker">
+          <strong>我是 Link Worker / 醫療人員 / 社工</strong>
+          <span>完整篩選資源、開立社會處方單並列印給個案</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 民眾模式 -->
+    <section id="view-patient" class="view" hidden>
+      <h1>你最近想要什麼？</h1>
+      <p class="lead">可以選不只一個。</p>
+      <div id="need-grid" class="need-grid"></div>
+
+      <div class="simple-filters">
+        <label>你住哪一區？
+          <select id="p-district"><option value="">都可以</option></select>
+        </label>
+        <label class="check"><input type="checkbox" id="p-free"> 只看免費的</label>
+      </div>
+
+      <div id="p-mental-note" class="callout" hidden>
+        心情不好的時候，不用一個人撐著。如果有傷害自己的想法，請撥 <a href="tel:1925">1925 安心專線</a>（24 小時、免費）。
+      </div>
+
+      <h2 id="p-result-title" class="result-title"></h2>
+      <div id="p-results" class="cards"></div>
+    </section>
+
+    <!-- Link worker 模式 -->
+    <section id="view-worker" class="view" hidden>
+      <div class="worker-layout">
+        <form id="w-filters" class="filters" onsubmit="return false">
+          <h2>篩選</h2>
+          <label>關鍵字
+            <input type="search" id="w-q" placeholder="名稱、地點、說明…">
+          </label>
+          <fieldset>
+            <legend>需求類別</legend>
+            <div id="w-cats"></div>
+          </fieldset>
+          <label>行政區
+            <select id="w-district"><option value="">全部</option></select>
+          </label>
+          <label>適合對象
+            <select id="w-audience"><option value="">全部</option></select>
+          </label>
+          <label class="check"><input type="checkbox" id="w-free"> 只看免費</label>
+          <button type="button" id="w-reset" class="ghost">清除篩選</button>
+        </form>
+        <div>
+          <h2 id="w-result-title" class="result-title"></h2>
+          <div id="w-results" class="rows"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 清單 / 處方單 -->
+  <div id="list-panel" class="panel" hidden>
+    <div class="panel-inner" role="dialog" aria-labelledby="rx-heading">
+      <div class="panel-head no-print">
+        <h2 id="rx-heading">清單</h2>
+        <button type="button" id="list-close" class="ghost" aria-label="關閉">關閉</button>
+      </div>
+
+      <div id="rx-print">
+        <div class="print-only rx-print-head">
+          <h1 id="rx-print-title">社會處方單</h1>
+          <p>日期：<span id="rx-date"></span></p>
+        </div>
+
+        <div id="rx-worker-fields" class="rx-fields">
+          <p class="hint no-print">請勿填寫姓名、身分證字號等可識別個人的資料。內容只存在這台裝置的瀏覽器中。</p>
+          <label>對個案重要的事（What matters to you?）
+            <textarea id="rx-goal" rows="2"></textarea>
+          </label>
+          <label>建議 / 備註
+            <textarea id="rx-note" rows="2"></textarea>
+          </label>
+          <label>下次追蹤日期
+            <input type="date" id="rx-followup">
+          </label>
+          <div class="print-only" id="rx-fields-print"></div>
+        </div>
+
+        <ol id="rx-items" class="rx-items"></ol>
+        <p id="rx-empty" class="hint">還沒有加入任何資源。</p>
+
+        <p class="print-only rx-crisis">需要立即協助：安心專線 1925（24 小時）｜生命線 1995｜緊急狀況 119 / 110</p>
+      </div>
+
+      <div class="panel-actions no-print">
+        <button type="button" id="rx-print-btn" class="primary">列印 / 存成 PDF</button>
+        <button type="button" id="rx-clear" class="ghost">清空清單</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      資源資訊可能變動，參加前請先以電話確認。本網站不提供醫療診斷，也不蒐集任何個人資料。
+    </div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
